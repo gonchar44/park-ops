@@ -16,7 +16,7 @@
         "format:fix": "prettier --write '**/*.{js,ts,tsx,json,css,scss,md}'",
         "db:start": "docker compose up -d --wait",
         "db:stop": "docker compose down",
-        "db:reset": "docker compose down -v && docker compose up -d --wait && for i in 1 2 3 4 5; do pnpm db:migrate && break || sleep 2; done",
+        "db:reset": "docker compose down -v && docker compose up -d --wait && (success=0; for i in 1 2 3 4 5; do pnpm db:migrate && success=1 && break || sleep 2; done; test \"$success\" = 1)",
         "db:generate": "pnpm --filter api db:generate",
         "db:migrate": "pnpm --filter api db:migrate",
         "db:studio": "pnpm --filter api db:studio"
