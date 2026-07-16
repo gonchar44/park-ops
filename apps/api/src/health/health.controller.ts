@@ -1,4 +1,4 @@
-import { Controller, Get, Inject } from "@nestjs/common";
+import { Controller, Get, HttpException, HttpStatus, Inject } from "@nestjs/common";
 import { sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { DRIZZLE } from "../database/database.module";
@@ -9,16 +9,22 @@ export class HealthController {
 
     @Get()
     async check() {
-        let database: "ok" | "error" = "ok";
         try {
             await this.db.execute(sql`select 1`);
         } catch {
-            database = "error";
+            throw new HttpException(
+                {
+                    status: "error",
+                    database: "error",
+                    timestamp: new Date().toISOString(),
+                },
+                HttpStatus.SERVICE_UNAVAILABLE,
+            );
         }
 
         return {
             status: "ok",
-            database,
+            database: "ok",
             timestamp: new Date().toISOString(),
         };
     }
