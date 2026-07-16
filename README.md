@@ -22,7 +22,9 @@ Monorepo for ParkOps — parking operations platform.
 corepack enable
 pnpm install
 
-cp .env.example apps/api/.env
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env.local
+
 pnpm db:start
 
 pnpm db:migrate
@@ -34,15 +36,15 @@ pnpm dev
 
 ## Scripts
 
-| Script              | Description                                          |
-| -------------------- | ----------------------------------------------------- |
-| `pnpm dev`           | Run backend + frontend concurrently                   |
-| `pnpm build`         | Build all apps                                        |
-| `pnpm lint`          | Lint all apps                                          |
-| `pnpm typecheck`     | Typecheck all apps                                    |
-| `pnpm db:start`      | Start the local Postgres/PostGIS container            |
-| `pnpm db:stop`       | Stop the local Postgres/PostGIS container             |
-| `pnpm db:reset`      | Wipe the local DB volume, recreate, and re-migrate    |
-| `pnpm db:generate`   | Generate a Drizzle migration                          |
-| `pnpm db:migrate`    | Apply Drizzle migrations                              |
-| `pnpm db:studio`     | Open Drizzle Studio against the local DB              |
+| Script             | Description                                        |
+| ------------------ | -------------------------------------------------- |
+| `pnpm dev`         | Run backend + frontend concurrently                |
+| `pnpm build`       | Build all apps                                     |
+| `pnpm lint`        | Lint all apps                                      |
+| `pnpm typecheck`   | Typecheck all apps                                 |
+| `pnpm db:start`    | Start the local Postgres/PostGIS container         |
+| `pnpm db:stop`     | Stop the local Postgres/PostGIS container          |
+| `pnpm db:reset`    | Wipe the local DB volume, recreate, and re-migrate |
+| `pnpm db:generate` | Generate a Drizzle migration                       |
+| `pnpm db:migrate`  | Apply Drizzle migrations                           |
+| `pnpm db:studio`   | Open Drizzle Studio against the local DB           |
