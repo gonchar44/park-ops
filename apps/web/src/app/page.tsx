@@ -23,7 +23,7 @@ export default async function Home() {
     const isHealthy = "status" in health && health.status === "ok";
 
     return (
-        <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-zinc-50 dark:bg-black">
+        <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-zinc-50 pt-24 dark:bg-black">
             <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">ParkOps</h1>
 
             <div className="flex items-center gap-3 rounded-full border border-black/[.08] px-5 py-2 dark:border-white/[.145]">
