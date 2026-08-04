@@ -5,11 +5,20 @@
 :root {
     --background: #ffffff;
     --foreground: #171717;
+    --popover: #ffffff;
+    --popover-foreground: #171717;
+}
+
+.dark {
+    --popover: #18181b;
+    --popover-foreground: #fafafa;
 }
 
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
 }
@@ -17,4 +26,31 @@
 body {
     background: var(--background);
     color: var(--foreground);
+}
+
+@keyframes popover-in {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes popover-out {
+    from {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.96) translateY(-4px);
+    }
+}
+
+@theme {
+    --animate-popover-in: popover-in 0.15s ease-out;
+    --animate-popover-out: popover-out 0.1s ease-in;
 }
