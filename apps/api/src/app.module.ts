@@ -7,6 +7,7 @@ import { CountriesModule } from "./countries/countries.module";
 import { DatabaseModule } from "./database/database.module";
 import { HealthModule } from "./health/health.module";
 import { MunicipalitiesModule } from "./municipalities/municipalities.module";
+import { ParkingZonesModule } from "./parking-zones/parking-zones.module";
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { MunicipalitiesModule } from "./municipalities/municipalities.module";
         CountriesModule,
         MunicipalitiesModule,
         CitiesModule,
+        ParkingZonesModule,
     ],
     controllers: [AppController],
     providers: [AppService],
