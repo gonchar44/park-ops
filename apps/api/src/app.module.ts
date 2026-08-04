@@ -6,9 +6,17 @@ import { CitiesModule } from "./cities/cities.module";
 import { CountriesModule } from "./countries/countries.module";
 import { DatabaseModule } from "./database/database.module";
 import { HealthModule } from "./health/health.module";
+import { MunicipalitiesModule } from "./municipalities/municipalities.module";
 
 @Module({
-    imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, HealthModule, CountriesModule, CitiesModule],
+    imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
+        DatabaseModule,
+        HealthModule,
+        CountriesModule,
+        MunicipalitiesModule,
+        CitiesModule,
+    ],
     controllers: [AppController],
     providers: [AppService],
 })
