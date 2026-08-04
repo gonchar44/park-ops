@@ -15,6 +15,8 @@ import {
     varchar,
 } from "drizzle-orm/pg-core";
 
+import { cities } from "./cities";
+
 export const parkingZoneStatuses = ["active", "maintenance", "closed"] as const;
 export const parkingZoneStatusEnum = pgEnum("parking_zone_status", parkingZoneStatuses);
 
@@ -50,6 +52,9 @@ export const parkingZones = pgTable(
     "parking_zones",
     {
         id: uuid("id").defaultRandom().primaryKey(),
+        cityId: uuid("city_id")
+            .notNull()
+            .references(() => cities.id, { onDelete: "restrict" }),
         code: varchar("code", { length: 32 }).notNull(),
         name: varchar("name", { length: 160 }).notNull(),
         description: text("description"),
@@ -77,6 +82,7 @@ export const parkingZones = pgTable(
     },
     (table) => [
         uniqueIndex("parking_zones_code_unique_idx").on(table.code),
+        index("parking_zones_city_id_idx").on(table.cityId),
         index("parking_zones_polygon_gist_idx").using("gist", table.polygon),
         check("parking_zones_code_not_blank", sql`length(btrim(${table.code})) > 0`),
         check("parking_zones_name_not_blank", sql`length(btrim(${table.name})) > 0`),

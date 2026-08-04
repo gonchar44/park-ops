@@ -4,6 +4,9 @@ import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
+import { cities } from "./schema/cities";
+import { countries } from "./schema/countries";
+import { municipalities } from "./schema/municipalities";
 import { type NewParkingZone, type OpeningHours, parkingZones } from "./schema/parking-zones";
 
 type GeoJsonPolygon = {
@@ -11,7 +14,7 @@ type GeoJsonPolygon = {
     coordinates: number[][][];
 };
 
-type ParkingZoneSeed = Omit<NewParkingZone, "id" | "polygon" | "createdAt" | "updatedAt"> & {
+type ParkingZoneSeed = Omit<NewParkingZone, "id" | "cityId" | "polygon" | "createdAt" | "updatedAt"> & {
     polygon: GeoJsonPolygon;
 };
 
@@ -187,16 +190,64 @@ async function seedParkingZones() {
 
     try {
         await database.transaction(async (transaction) => {
+            const [denmark] = await transaction
+                .insert(countries)
+                .values({ isoCode: "DK", name: "Denmark" })
+                .onConflictDoUpdate({
+                    target: countries.isoCode,
+                    set: {
+                        name: "Denmark",
+                        isActive: true,
+                        updatedAt: new Date(),
+                    },
+                })
+                .returning({ id: countries.id });
+
+            const [copenhagenMunicipality] = await transaction
+                .insert(municipalities)
+                .values({
+                    countryId: denmark.id,
+                    code: "COPENHAGEN",
+                    name: "Copenhagen Municipality",
+                })
+                .onConflictDoUpdate({
+                    target: [municipalities.countryId, municipalities.code],
+                    set: {
+                        name: "Copenhagen Municipality",
+                        isActive: true,
+                        updatedAt: new Date(),
+                    },
+                })
+                .returning({ id: municipalities.id });
+
+            const [copenhagen] = await transaction
+                .insert(cities)
+                .values({
+                    municipalityId: copenhagenMunicipality.id,
+                    code: "COPENHAGEN",
+                    name: "Copenhagen",
+                })
+                .onConflictDoUpdate({
+                    target: [cities.municipalityId, cities.code],
+                    set: {
+                        name: "Copenhagen",
+                        isActive: true,
+                        updatedAt: new Date(),
+                    },
+                })
+                .returning({ id: cities.id });
+
             for (const seed of parkingZoneSeeds) {
                 const { code, polygon, ...mutableValues } = seed;
                 const polygonSql = sql<string>`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(polygon)}), 4326)`;
 
                 await transaction
                     .insert(parkingZones)
-                    .values({ code, polygon: polygonSql, ...mutableValues })
+                    .values({ cityId: copenhagen.id, code, polygon: polygonSql, ...mutableValues })
                     .onConflictDoUpdate({
                         target: parkingZones.code,
                         set: {
+                            cityId: copenhagen.id,
                             polygon: polygonSql,
                             ...mutableValues,
                             updatedAt: new Date(),

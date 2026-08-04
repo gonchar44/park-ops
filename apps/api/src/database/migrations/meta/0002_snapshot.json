@@ -1,0 +1,625 @@
+{
+  "id": "eff38cd6-eaa3-4840-ae24-85419ef997b8",
+  "prevId": "8dffaace-ea21-43b5-9633-65b3edb29ca4",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.cities": {
+      "name": "cities",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "municipality_id": {
+          "name": "municipality_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "cities_municipality_code_unique_idx": {
+          "name": "cities_municipality_code_unique_idx",
+          "columns": [
+            {
+              "expression": "municipality_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "cities_municipality_id_idx": {
+          "name": "cities_municipality_id_idx",
+          "columns": [
+            {
+              "expression": "municipality_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "cities_municipality_id_municipalities_id_fk": {
+          "name": "cities_municipality_id_municipalities_id_fk",
+          "tableFrom": "cities",
+          "tableTo": "municipalities",
+          "columnsFrom": [
+            "municipality_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "cities_code_not_blank": {
+          "name": "cities_code_not_blank",
+          "value": "length(btrim(\"cities\".\"code\")) > 0"
+        },
+        "cities_name_not_blank": {
+          "name": "cities_name_not_blank",
+          "value": "length(btrim(\"cities\".\"name\")) > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.countries": {
+      "name": "countries",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "iso_code": {
+          "name": "iso_code",
+          "type": "varchar(2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "countries_iso_code_unique_idx": {
+          "name": "countries_iso_code_unique_idx",
+          "columns": [
+            {
+              "expression": "iso_code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "countries_iso_code_format": {
+          "name": "countries_iso_code_format",
+          "value": "\"countries\".\"iso_code\" ~ '^[A-Z]{2}$'"
+        },
+        "countries_name_not_blank": {
+          "name": "countries_name_not_blank",
+          "value": "length(btrim(\"countries\".\"name\")) > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.municipalities": {
+      "name": "municipalities",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "country_id": {
+          "name": "country_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "municipalities_country_code_unique_idx": {
+          "name": "municipalities_country_code_unique_idx",
+          "columns": [
+            {
+              "expression": "country_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "municipalities_country_id_idx": {
+          "name": "municipalities_country_id_idx",
+          "columns": [
+            {
+              "expression": "country_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "municipalities_country_id_countries_id_fk": {
+          "name": "municipalities_country_id_countries_id_fk",
+          "tableFrom": "municipalities",
+          "tableTo": "countries",
+          "columnsFrom": [
+            "country_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "municipalities_code_not_blank": {
+          "name": "municipalities_code_not_blank",
+          "value": "length(btrim(\"municipalities\".\"code\")) > 0"
+        },
+        "municipalities_name_not_blank": {
+          "name": "municipalities_name_not_blank",
+          "value": "length(btrim(\"municipalities\".\"name\")) > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.parking_zones": {
+      "name": "parking_zones",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "city_id": {
+          "name": "city_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "polygon": {
+          "name": "polygon",
+          "type": "geometry(Polygon,4326)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "capacity": {
+          "name": "capacity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "occupied_spaces": {
+          "name": "occupied_spaces",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vehicle_restrictions": {
+          "name": "vehicle_restrictions",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "price_per_hour": {
+          "name": "price_per_hour",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "varchar(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'DKK'"
+        },
+        "opening_hours": {
+          "name": "opening_hours",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timezone": {
+          "name": "timezone",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'Europe/Copenhagen'"
+        },
+        "free_parking_weekdays": {
+          "name": "free_parking_weekdays",
+          "type": "parking_weekday[]",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "ARRAY[]::parking_weekday[]"
+        },
+        "free_parking_minutes": {
+          "name": "free_parking_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "status": {
+          "name": "status",
+          "type": "parking_zone_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "warning_occupancy_percent": {
+          "name": "warning_occupancy_percent",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 75
+        },
+        "critical_occupancy_percent": {
+          "name": "critical_occupancy_percent",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 90
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "parking_zones_code_unique_idx": {
+          "name": "parking_zones_code_unique_idx",
+          "columns": [
+            {
+              "expression": "code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "parking_zones_city_id_idx": {
+          "name": "parking_zones_city_id_idx",
+          "columns": [
+            {
+              "expression": "city_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "parking_zones_polygon_gist_idx": {
+          "name": "parking_zones_polygon_gist_idx",
+          "columns": [
+            {
+              "expression": "polygon",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gist",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "parking_zones_city_id_cities_id_fk": {
+          "name": "parking_zones_city_id_cities_id_fk",
+          "tableFrom": "parking_zones",
+          "tableTo": "cities",
+          "columnsFrom": [
+            "city_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "parking_zones_code_not_blank": {
+          "name": "parking_zones_code_not_blank",
+          "value": "length(btrim(\"parking_zones\".\"code\")) > 0"
+        },
+        "parking_zones_name_not_blank": {
+          "name": "parking_zones_name_not_blank",
+          "value": "length(btrim(\"parking_zones\".\"name\")) > 0"
+        },
+        "parking_zones_capacity_non_negative": {
+          "name": "parking_zones_capacity_non_negative",
+          "value": "\"parking_zones\".\"capacity\" IS NULL OR \"parking_zones\".\"capacity\" >= 0"
+        },
+        "parking_zones_occupied_spaces_non_negative": {
+          "name": "parking_zones_occupied_spaces_non_negative",
+          "value": "\"parking_zones\".\"occupied_spaces\" IS NULL OR \"parking_zones\".\"occupied_spaces\" >= 0"
+        },
+        "parking_zones_occupied_within_capacity": {
+          "name": "parking_zones_occupied_within_capacity",
+          "value": "\"parking_zones\".\"capacity\" IS NULL OR \"parking_zones\".\"occupied_spaces\" IS NULL OR \"parking_zones\".\"occupied_spaces\" <= \"parking_zones\".\"capacity\""
+        },
+        "parking_zones_price_per_hour_non_negative": {
+          "name": "parking_zones_price_per_hour_non_negative",
+          "value": "\"parking_zones\".\"price_per_hour\" >= 0"
+        },
+        "parking_zones_currency_iso_code": {
+          "name": "parking_zones_currency_iso_code",
+          "value": "\"parking_zones\".\"currency\" ~ '^[A-Z]{3}$'"
+        },
+        "parking_zones_vehicle_restrictions_object": {
+          "name": "parking_zones_vehicle_restrictions_object",
+          "value": "jsonb_typeof(\"parking_zones\".\"vehicle_restrictions\") = 'object'"
+        },
+        "parking_zones_opening_hours_object": {
+          "name": "parking_zones_opening_hours_object",
+          "value": "jsonb_typeof(\"parking_zones\".\"opening_hours\") = 'object'"
+        },
+        "parking_zones_free_parking_minutes_range": {
+          "name": "parking_zones_free_parking_minutes_range",
+          "value": "\"parking_zones\".\"free_parking_minutes\" BETWEEN 0 AND 1440"
+        },
+        "parking_zones_warning_occupancy_range": {
+          "name": "parking_zones_warning_occupancy_range",
+          "value": "\"parking_zones\".\"warning_occupancy_percent\" BETWEEN 0 AND 100"
+        },
+        "parking_zones_critical_occupancy_range": {
+          "name": "parking_zones_critical_occupancy_range",
+          "value": "\"parking_zones\".\"critical_occupancy_percent\" BETWEEN 0 AND 100"
+        },
+        "parking_zones_occupancy_threshold_order": {
+          "name": "parking_zones_occupancy_threshold_order",
+          "value": "\"parking_zones\".\"warning_occupancy_percent\" < \"parking_zones\".\"critical_occupancy_percent\""
+        },
+        "parking_zones_polygon_not_empty": {
+          "name": "parking_zones_polygon_not_empty",
+          "value": "NOT ST_IsEmpty(\"parking_zones\".\"polygon\")"
+        },
+        "parking_zones_polygon_valid": {
+          "name": "parking_zones_polygon_valid",
+          "value": "ST_IsValid(\"parking_zones\".\"polygon\")"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.parking_weekday": {
+      "name": "parking_weekday",
+      "schema": "public",
+      "values": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday"
+      ]
+    },
+    "public.parking_zone_status": {
+      "name": "parking_zone_status",
+      "schema": "public",
+      "values": [
+        "active",
+        "maintenance",
+        "closed"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
