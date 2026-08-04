@@ -12,10 +12,10 @@ export type MapStyleId = "standard" | "streets" | "satellite";
 
 export const DEFAULT_MAP_STYLE_ID: MapStyleId = "standard";
 
-export const MAP_STYLE_OPTIONS: { id: MapStyleId; label: string; previewSrc: string }[] = [
+export const MAP_STYLE_OPTIONS: { id: MapStyleId; label: string; previewSrc: string; disabled?: boolean }[] = [
     { id: "standard", label: "Standard", previewSrc: "/map-styles/standard.webp" },
     { id: "streets", label: "Streets", previewSrc: "/map-styles/streets.webp" },
-    { id: "satellite", label: "Satellite", previewSrc: "/map-styles/satellite.webp" },
+    { id: "satellite", label: "Satellite", previewSrc: "/map-styles/satellite.webp", disabled: true },
 ];
 
 const ESRI_WORLD_IMAGERY_ATTRIBUTION =

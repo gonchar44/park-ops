@@ -4,13 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import {
-    DEFAULT_MAP_STYLE_ID,
-    DEFAULT_MAP_VIEW,
-    GEOAPIFY_API_KEY,
-    getMapStyle,
-    type MapStyleId,
-} from "@/features/map/lib/config";
+import { DEFAULT_MAP_VIEW, GEOAPIFY_API_KEY, getMapStyle, type MapStyleId } from "@/features/map/lib/config";
+import { useMapStore } from "@/features/map/model/map-store";
 import { MapStyleControl } from "@/features/map/ui/MapStyleControl";
 import { MapZoomControl } from "@/features/map/ui/MapZoomControl";
 
@@ -18,7 +13,8 @@ export function MapView() {
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<maplibregl.Map | null>(null);
     const [map, setMap] = useState<maplibregl.Map | null>(null);
-    const [styleId, setStyleId] = useState<MapStyleId>(DEFAULT_MAP_STYLE_ID);
+    const styleId = useMapStore((state) => state.mapStyleId);
+    const setMapStyleId = useMapStore((state) => state.setMapStyleId);
 
     useEffect(() => {
         if (!containerRef.current || !GEOAPIFY_API_KEY) {
@@ -27,7 +23,7 @@ export function MapView() {
 
         const mapInstance = new maplibregl.Map({
             container: containerRef.current,
-            style: getMapStyle(DEFAULT_MAP_STYLE_ID, GEOAPIFY_API_KEY),
+            style: getMapStyle(useMapStore.getState().mapStyleId, GEOAPIFY_API_KEY),
             center: DEFAULT_MAP_VIEW.center,
             zoom: DEFAULT_MAP_VIEW.zoom,
         });
@@ -46,7 +42,7 @@ export function MapView() {
             return;
         }
 
-        setStyleId(id);
+        setMapStyleId(id);
         mapRef.current?.setStyle(getMapStyle(id, GEOAPIFY_API_KEY));
     }
 

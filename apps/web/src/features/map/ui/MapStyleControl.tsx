@@ -44,7 +44,9 @@ export function MapStyleControl({ styleId, onStyleChange }: MapStyleControlProps
                         <RadioGroupItem
                             key={option.id}
                             value={option.id}
-                            className="flex flex-col items-center gap-1.5 p-1 rounded-2xl"
+                            disabled={option.disabled}
+                            title={option.disabled ? `${option.label} — coming soon` : undefined}
+                            className="flex flex-col items-center gap-1.5 p-1 rounded-2xl data-disabled:cursor-not-allowed data-disabled:opacity-50 data-disabled:hover:bg-transparent"
                         >
                             <span className="relative size-16 overflow-hidden rounded-xl ring-2 ring-transparent ring-offset-2 ring-offset-popover transition-colors group-data-[state=checked]:ring-zinc-900 dark:group-data-[state=checked]:ring-white">
                                 <Image src={option.previewSrc} alt="" fill sizes="64px" className="object-cover" />
