@@ -1,4 +1,4 @@
-import { Global, Module } from "@nestjs/common";
+import { Global, Inject, Module, OnModuleDestroy } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
@@ -15,17 +15,24 @@ import { municipalities } from "./schema/municipalities";
 import { parkingZones } from "./schema/parking-zones";
 
 export const DRIZZLE = Symbol("DRIZZLE");
+export const POSTGRES_CLIENT = Symbol("POSTGRES_CLIENT");
 
 @Global()
 @Module({
     providers: [
         {
-            provide: DRIZZLE,
+            provide: POSTGRES_CLIENT,
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => {
                 const connectionString = configService.getOrThrow<string>("DATABASE_URL");
-                const client = postgres(connectionString);
-                return drizzle(client, {
+                return postgres(connectionString);
+            },
+        },
+        {
+            provide: DRIZZLE,
+            inject: [POSTGRES_CLIENT],
+            useFactory: (client: postgres.Sql) =>
+                drizzle(client, {
                     schema: {
                         cities,
                         citiesRelations,
@@ -36,10 +43,15 @@ export const DRIZZLE = Symbol("DRIZZLE");
                         parkingZones,
                         parkingZonesRelations,
                     },
-                });
-            },
+                }),
         },
     ],
     exports: [DRIZZLE],
 })
-export class DatabaseModule {}
+export class DatabaseModule implements OnModuleDestroy {
+    constructor(@Inject(POSTGRES_CLIENT) private readonly client: postgres.Sql) {}
+
+    async onModuleDestroy() {
+        await this.client.end();
+    }
+}
