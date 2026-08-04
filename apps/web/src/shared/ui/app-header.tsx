@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { Lock } from "lucide-react";
+import { LockIcon } from "lucide-react";
 
 import { cn } from "@/shared/lib/cn";
 
@@ -44,7 +44,7 @@ export function AppHeader() {
                                 className="flex cursor-not-allowed items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-zinc-400 select-none dark:text-zinc-500"
                             >
                                 {item.label}
-                                <Lock aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={2} />
+                                <LockIcon aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={2} />
                             </span>
                         );
                     }

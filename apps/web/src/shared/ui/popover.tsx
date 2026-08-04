@@ -22,9 +22,9 @@ export function PopoverContent({
                 align={align}
                 sideOffset={sideOffset}
                 className={cn(
-                    "z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-lg border border-zinc-200 bg-popover p-4 text-popover-foreground shadow-lg outline-none",
+                    "z-50 w-72 origin-(--radix-popover-content-transform-origin) rounded-2xl bg-white/30 p-4 text-popover-foreground shadow-[0_8px_32px_-8px_rgba(0,0,0,0.25)] outline-none backdrop-blur-2xl backdrop-saturate-150",
                     "data-[state=open]:animate-popover-in data-[state=closed]:animate-popover-out motion-reduce:animate-none",
-                    "dark:border-zinc-800",
+                    "dark:bg-white/8 dark:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]",
                     className,
                 )}
                 {...props}

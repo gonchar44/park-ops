@@ -4,13 +4,21 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { DEFAULT_MAP_VIEW, GEOAPIFY_API_KEY, getMapStyleUrl } from "@/features/map/lib/config";
+import {
+    DEFAULT_MAP_STYLE_ID,
+    DEFAULT_MAP_VIEW,
+    GEOAPIFY_API_KEY,
+    getMapStyle,
+    type MapStyleId,
+} from "@/features/map/lib/config";
+import { MapStyleControl } from "@/features/map/ui/MapStyleControl";
 import { MapZoomControl } from "@/features/map/ui/MapZoomControl";
 
 export function MapView() {
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<maplibregl.Map | null>(null);
     const [map, setMap] = useState<maplibregl.Map | null>(null);
+    const [styleId, setStyleId] = useState<MapStyleId>(DEFAULT_MAP_STYLE_ID);
 
     useEffect(() => {
         if (!containerRef.current || !GEOAPIFY_API_KEY) {
@@ -19,7 +27,7 @@ export function MapView() {
 
         const mapInstance = new maplibregl.Map({
             container: containerRef.current,
-            style: getMapStyleUrl(GEOAPIFY_API_KEY),
+            style: getMapStyle(DEFAULT_MAP_STYLE_ID, GEOAPIFY_API_KEY),
             center: DEFAULT_MAP_VIEW.center,
             zoom: DEFAULT_MAP_VIEW.zoom,
         });
@@ -32,6 +40,15 @@ export function MapView() {
             mapInstance.remove();
         };
     }, []);
+
+    function handleStyleChange(id: MapStyleId) {
+        if (!GEOAPIFY_API_KEY) {
+            return;
+        }
+
+        setStyleId(id);
+        mapRef.current?.setStyle(getMapStyle(id, GEOAPIFY_API_KEY));
+    }
 
     if (!GEOAPIFY_API_KEY) {
         return (
@@ -51,7 +68,13 @@ export function MapView() {
     return (
         <div className="relative h-full w-full">
             <div ref={containerRef} role="region" aria-label="Map" className="h-full w-full" />
-            {map && <MapZoomControl map={map} />}
+
+            {map && (
+                <div className="pointer-events-none absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col items-end gap-3 sm:right-6">
+                    <MapStyleControl map={map} styleId={styleId} onStyleChange={handleStyleChange} />
+                    <MapZoomControl map={map} />
+                </div>
+            )}
         </div>
     );
 }
