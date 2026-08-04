@@ -7,7 +7,9 @@
     "license": "UNLICENSED",
     "scripts": {
         "build": "nest build",
-        "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+        "format": "pnpm run format:fix",
+        "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\" \"test/**/*.json\" \"*.{js,ts,mjs,json,md}\"",
+        "format:fix": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"test/**/*.json\" \"*.{js,ts,mjs,json,md}\"",
         "start": "nest start",
         "dev": "nest start --watch",
         "start:dev": "nest start --watch",
