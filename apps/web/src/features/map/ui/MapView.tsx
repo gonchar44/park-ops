@@ -1,32 +1,35 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { DEFAULT_MAP_VIEW, GEOAPIFY_API_KEY, getMapStyleUrl } from "@/features/map/lib/config";
+import { MapZoomControl } from "@/features/map/ui/MapZoomControl";
 
 export function MapView() {
     const containerRef = useRef<HTMLDivElement>(null);
     const mapRef = useRef<maplibregl.Map | null>(null);
+    const [map, setMap] = useState<maplibregl.Map | null>(null);
 
     useEffect(() => {
         if (!containerRef.current || !GEOAPIFY_API_KEY) {
             return;
         }
 
-        const map = new maplibregl.Map({
+        const mapInstance = new maplibregl.Map({
             container: containerRef.current,
             style: getMapStyleUrl(GEOAPIFY_API_KEY),
             center: DEFAULT_MAP_VIEW.center,
             zoom: DEFAULT_MAP_VIEW.zoom,
         });
-        map.addControl(new maplibregl.NavigationControl(), "top-right");
-        mapRef.current = map;
+        mapRef.current = mapInstance;
+        setMap(mapInstance);
 
         return () => {
             mapRef.current = null;
-            map.remove();
+            setMap(null);
+            mapInstance.remove();
         };
     }, []);
 
@@ -45,5 +48,10 @@ export function MapView() {
         );
     }
 
-    return <div ref={containerRef} role="region" aria-label="Map" className="h-full w-full" />;
+    return (
+        <div className="relative h-full w-full">
+            <div ref={containerRef} role="region" aria-label="Map" className="h-full w-full" />
+            {map && <MapZoomControl map={map} />}
+        </div>
+    );
 }
