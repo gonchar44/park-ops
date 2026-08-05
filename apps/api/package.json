@@ -7,7 +7,9 @@
     "license": "UNLICENSED",
     "scripts": {
         "build": "nest build",
-        "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+        "format": "pnpm run format:fix",
+        "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\" \"test/**/*.json\" \"*.{js,ts,mjs,json,md}\"",
+        "format:fix": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" \"test/**/*.json\" \"*.{js,ts,mjs,json,md}\"",
         "start": "nest start",
         "dev": "nest start --watch",
         "start:dev": "nest start --watch",
@@ -22,7 +24,8 @@
         "test:e2e": "jest --config ./test/jest-e2e.json",
         "db:generate": "drizzle-kit generate",
         "db:studio": "drizzle-kit studio",
-        "db:migrate": "drizzle-kit migrate"
+        "db:migrate": "drizzle-kit migrate",
+        "db:seed": "ts-node src/database/seed.ts"
     },
     "dependencies": {
         "@nestjs/common": "^11.0.1",
@@ -32,7 +35,8 @@
         "drizzle-orm": "^0.45.2",
         "postgres": "^3.4.9",
         "reflect-metadata": "^0.2.2",
-        "rxjs": "^7.8.1"
+        "rxjs": "^7.8.1",
+        "zod": "^4.4.3"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.2.0",

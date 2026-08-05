@@ -5,6 +5,9 @@
     "scripts": {
         "dev": "next dev --port 3000",
         "build": "next build",
+        "format": "pnpm run format:fix",
+        "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"*.{js,ts,mjs,json,md}\"",
+        "format:fix": "prettier --write \"src/**/*.{ts,tsx,css}\" \"*.{js,ts,mjs,json,md}\"",
         "start": "next start --port 3000",
         "lint": "eslint",
         "typecheck": "tsc --noEmit"

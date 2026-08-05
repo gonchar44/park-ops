@@ -1,20 +1,20 @@
 services:
-  db:
-    image: postgis/postgis:16-3.4
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-parkops}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-parkops}
-      POSTGRES_DB: ${POSTGRES_DB:-parkops}
-    ports:
-      - "${POSTGRES_PORT:-5434}:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-parkops} -d ${POSTGRES_DB:-parkops}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+    db:
+        image: postgis/postgis:16-3.4
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-parkops}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-parkops}
+            POSTGRES_DB: ${POSTGRES_DB:-parkops}
+        ports:
+            - "${POSTGRES_PORT:-5434}:5432"
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-parkops} -d ${POSTGRES_DB:-parkops}"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
 
 volumes:
-  postgres-data:
+    postgres-data:
