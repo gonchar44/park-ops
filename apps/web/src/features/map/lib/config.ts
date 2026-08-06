@@ -18,6 +18,10 @@ export const MAP_STYLE_OPTIONS: { id: MapStyleId; label: string; previewSrc: str
     { id: "satellite", label: "Satellite", previewSrc: "/map-styles/satellite.webp", disabled: true },
 ];
 
+export function isMapStyleId(value: unknown): value is MapStyleId {
+    return MAP_STYLE_OPTIONS.some((option) => option.id === value);
+}
+
 const ESRI_WORLD_IMAGERY_ATTRIBUTION =
     "Powered by Esri | Source: Esri, Maxar, Earthstar Geographics, and the GIS community";
 

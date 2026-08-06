@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, devtools, persist } from "zustand/middleware";
 
-import { DEFAULT_MAP_STYLE_ID, type MapStyleId } from "@/features/map/lib/config";
+import { DEFAULT_MAP_STYLE_ID, isMapStyleId, type MapStyleId } from "@/features/map/lib/config";
 
 const MAP_STORE_VERSION = 1;
 
@@ -22,6 +22,13 @@ export const useMapStore = create<MapState>()(
                 version: MAP_STORE_VERSION,
                 storage: createJSONStorage(() => localStorage),
                 partialize: (state) => ({ mapStyleId: state.mapStyleId }),
+                merge: (persistedState, currentState) => {
+                    const persisted = persistedState as Partial<MapState> | undefined;
+                    const mapStyleId = isMapStyleId(persisted?.mapStyleId)
+                        ? persisted.mapStyleId
+                        : DEFAULT_MAP_STYLE_ID;
+                    return { ...currentState, mapStyleId };
+                },
             },
         ),
         {
