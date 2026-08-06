@@ -68,7 +68,7 @@ export function MapView() {
 
             {map && (
                 <>
-                    <div className="pointer-events-none absolute top-4 left-4 z-10 sm:top-6 sm:left-6">
+                    <div className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2 sm:left-6">
                         <LocationFiltersCard />
                     </div>
                     <div className="pointer-events-none absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col items-end gap-3 sm:right-6">
