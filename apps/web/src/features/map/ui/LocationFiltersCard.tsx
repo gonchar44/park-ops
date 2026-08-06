@@ -47,7 +47,7 @@ function LocationSelectField({
     className,
 }: LocationSelectFieldProps) {
     return (
-        <Select value={value ?? undefined} onValueChange={onValueChange} disabled={disabled}>
+        <Select value={value ?? ""} onValueChange={onValueChange} disabled={disabled}>
             <SelectTrigger
                 aria-label={label}
                 className={cn(
