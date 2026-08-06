@@ -6,6 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 import { DEFAULT_MAP_VIEW, GEOAPIFY_API_KEY, getMapStyle, type MapStyleId } from "@/features/map/lib/config";
 import { useMapStore } from "@/features/map/model/map-store";
+import { LocationFiltersCard } from "@/features/map/ui/LocationFiltersCard";
 import { MapStyleControl } from "@/features/map/ui/MapStyleControl";
 import { MapZoomControl } from "@/features/map/ui/MapZoomControl";
 
@@ -66,10 +67,15 @@ export function MapView() {
             <div ref={containerRef} role="region" aria-label="Map" className="h-full w-full" />
 
             {map && (
-                <div className="pointer-events-none absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col items-end gap-3 sm:right-6">
-                    <MapStyleControl map={map} styleId={styleId} onStyleChange={handleStyleChange} />
-                    <MapZoomControl map={map} />
-                </div>
+                <>
+                    <div className="pointer-events-none absolute top-4 left-4 z-10 sm:top-6 sm:left-6">
+                        <LocationFiltersCard />
+                    </div>
+                    <div className="pointer-events-none absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col items-end gap-3 sm:right-6">
+                        <MapStyleControl map={map} styleId={styleId} onStyleChange={handleStyleChange} />
+                        <MapZoomControl map={map} />
+                    </div>
+                </>
             )}
         </div>
     );
