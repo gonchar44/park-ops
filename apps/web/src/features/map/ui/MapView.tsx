@@ -9,6 +9,7 @@ import { useMapStore } from "@/features/map/model/map-store";
 import { LocationFiltersCard } from "@/features/map/ui/LocationFiltersCard";
 import { MapStyleControl } from "@/features/map/ui/MapStyleControl";
 import { MapZoomControl } from "@/features/map/ui/MapZoomControl";
+import { useParkingZonesLayer } from "@/features/parking-zones/ui/useParkingZonesLayer";
 
 export function MapView() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -16,6 +17,9 @@ export function MapView() {
     const [map, setMap] = useState<maplibregl.Map | null>(null);
     const styleId = useMapStore((state) => state.mapStyleId);
     const setMapStyleId = useMapStore((state) => state.setMapStyleId);
+    const cityId = useMapStore((state) => state.cityId);
+
+    useParkingZonesLayer(map, cityId);
 
     useEffect(() => {
         if (!containerRef.current || !GEOAPIFY_API_KEY) {
