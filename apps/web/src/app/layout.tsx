@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { AppHeader } from "@/shared/ui/app-header";
 import { QueryClientProvider } from "@/shared/lib/query-client-provider";
+import { Toaster } from "@/shared/ui/toaster";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
                 <QueryClientProvider>
                     <AppHeader />
                     {children}
+                    <Toaster />
                 </QueryClientProvider>
             </body>
         </html>
