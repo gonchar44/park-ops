@@ -87,12 +87,14 @@ describe("ParkingZonesController (e2e)", () => {
                     municipalityId: municipality.id,
                     code: "ZONE-CTA",
                     name: `${TEST_NAME_PREFIX} City A`,
+                    center: sql<string>`ST_SetSRID(ST_MakePoint(12.5683, 55.6761), 4326)`,
                     isActive: true,
                 },
                 {
                     municipalityId: municipality.id,
                     code: "ZONE-CTB",
                     name: `${TEST_NAME_PREFIX} City B`,
+                    center: sql<string>`ST_SetSRID(ST_MakePoint(12.5683, 55.6761), 4326)`,
                     isActive: true,
                 },
             ])

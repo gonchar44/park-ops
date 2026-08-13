@@ -18,9 +18,15 @@ type ParkingZoneSeed = Omit<NewParkingZone, "id" | "cityId" | "polygon" | "creat
     polygon: GeoJsonPolygon;
 };
 
+type GeoJsonPoint = {
+    type: "Point";
+    coordinates: [number, number];
+};
+
 type CitySeed = {
     code: string;
     name: string;
+    center: GeoJsonPoint;
 };
 
 type MunicipalitySeed = {
@@ -37,6 +43,10 @@ type CountrySeed = {
 
 const COPENHAGEN_CITY_KEY = "DK/COPENHAGEN/COPENHAGEN";
 
+function point(longitude: number, latitude: number): GeoJsonPoint {
+    return { type: "Point", coordinates: [longitude, latitude] };
+}
+
 const locationSeeds: CountrySeed[] = [
     {
         isoCode: "DK",
@@ -45,17 +55,17 @@ const locationSeeds: CountrySeed[] = [
             {
                 code: "COPENHAGEN",
                 name: "Copenhagen Municipality",
-                cities: [{ code: "COPENHAGEN", name: "Copenhagen" }],
+                cities: [{ code: "COPENHAGEN", name: "Copenhagen", center: point(12.5683, 55.6761) }],
             },
             {
                 code: "AARHUS",
                 name: "Aarhus Municipality",
-                cities: [{ code: "AARHUS", name: "Aarhus" }],
+                cities: [{ code: "AARHUS", name: "Aarhus", center: point(10.2039, 56.1629) }],
             },
             {
                 code: "ODENSE",
                 name: "Odense Municipality",
-                cities: [{ code: "ODENSE", name: "Odense" }],
+                cities: [{ code: "ODENSE", name: "Odense", center: point(10.3873, 55.4038) }],
             },
         ],
     },
@@ -66,12 +76,12 @@ const locationSeeds: CountrySeed[] = [
             {
                 code: "STOCKHOLM",
                 name: "Stockholm Municipality",
-                cities: [{ code: "STOCKHOLM", name: "Stockholm" }],
+                cities: [{ code: "STOCKHOLM", name: "Stockholm", center: point(18.0686, 59.3293) }],
             },
             {
                 code: "GOTHENBURG",
                 name: "Gothenburg Municipality",
-                cities: [{ code: "GOTHENBURG", name: "Gothenburg" }],
+                cities: [{ code: "GOTHENBURG", name: "Gothenburg", center: point(11.9746, 57.7089) }],
             },
         ],
     },
@@ -82,12 +92,12 @@ const locationSeeds: CountrySeed[] = [
             {
                 code: "BERLIN",
                 name: "Berlin Municipality",
-                cities: [{ code: "BERLIN", name: "Berlin" }],
+                cities: [{ code: "BERLIN", name: "Berlin", center: point(13.405, 52.52) }],
             },
             {
                 code: "HAMBURG",
                 name: "Hamburg Municipality",
-                cities: [{ code: "HAMBURG", name: "Hamburg" }],
+                cities: [{ code: "HAMBURG", name: "Hamburg", center: point(9.9937, 53.5511) }],
             },
         ],
     },
@@ -98,7 +108,7 @@ const locationSeeds: CountrySeed[] = [
             {
                 code: "AMSTERDAM",
                 name: "Amsterdam Municipality",
-                cities: [{ code: "AMSTERDAM", name: "Amsterdam" }],
+                cities: [{ code: "AMSTERDAM", name: "Amsterdam", center: point(4.9041, 52.3676) }],
             },
         ],
     },
@@ -290,12 +300,13 @@ async function seedLocations(
                 .returning({ id: municipalities.id });
 
             for (const city of municipality.cities) {
+                const centerSql = sql<string>`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(city.center)}), 4326)`;
                 const [cityRow] = await transaction
                     .insert(cities)
-                    .values({ municipalityId: municipalityRow.id, code: city.code, name: city.name })
+                    .values({ municipalityId: municipalityRow.id, code: city.code, name: city.name, center: centerSql })
                     .onConflictDoUpdate({
                         target: [cities.municipalityId, cities.code],
-                        set: { name: city.name, isActive: true, updatedAt: new Date() },
+                        set: { name: city.name, center: centerSql, isActive: true, updatedAt: new Date() },
                     })
                     .returning({ id: cities.id });
 

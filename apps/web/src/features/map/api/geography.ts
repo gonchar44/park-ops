@@ -19,11 +19,17 @@ const municipalitySchema = z.object({
 
 export type Municipality = z.infer<typeof municipalitySchema>;
 
+const geoJsonPointSchema = z.object({
+    type: z.literal("Point"),
+    coordinates: z.tuple([z.number(), z.number()]),
+});
+
 const citySchema = z.object({
     id: z.string(),
     code: z.string(),
     name: z.string(),
     municipalityId: z.string(),
+    center: geoJsonPointSchema,
 });
 
 export type City = z.infer<typeof citySchema>;

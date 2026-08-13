@@ -4,7 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { DEFAULT_MAP_VIEW, GEOAPIFY_API_KEY, getMapStyle, type MapStyleId } from "@/features/map/lib/config";
+import { useCities } from "@/features/map/api/geography-queries";
+import {
+    CITY_FOCUS_ZOOM,
+    DEFAULT_MAP_VIEW,
+    GEOAPIFY_API_KEY,
+    getMapStyle,
+    type MapStyleId,
+} from "@/features/map/lib/config";
 import { useMapStore } from "@/features/map/model/map-store";
 import { LocationFiltersCard } from "@/features/map/ui/LocationFiltersCard";
 import { MapStyleControl } from "@/features/map/ui/MapStyleControl";
@@ -17,9 +24,27 @@ export function MapView() {
     const [map, setMap] = useState<maplibregl.Map | null>(null);
     const styleId = useMapStore((state) => state.mapStyleId);
     const setMapStyleId = useMapStore((state) => state.setMapStyleId);
+    const countryId = useMapStore((state) => state.countryId);
+    const municipalityId = useMapStore((state) => state.municipalityId);
     const cityId = useMapStore((state) => state.cityId);
 
     useParkingZonesLayer(map, cityId);
+
+    const citiesQuery = useCities(countryId, municipalityId);
+
+    useEffect(() => {
+        if (!map || !cityId) {
+            return;
+        }
+
+        const selectedCity = citiesQuery.data?.find((city) => city.id === cityId);
+
+        if (!selectedCity) {
+            return;
+        }
+
+        map.flyTo({ center: selectedCity.center.coordinates, zoom: CITY_FOCUS_ZOOM });
+    }, [map, cityId, citiesQuery.data]);
 
     useEffect(() => {
         if (!containerRef.current || !GEOAPIFY_API_KEY) {
