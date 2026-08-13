@@ -5,7 +5,6 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { useCities, useCountries, useMunicipalities } from "@/features/map/api/geography-queries";
 import { useMapStore } from "@/features/map/model/map-store";
 import { cn } from "@/shared/lib/cn";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 
 type NamedOption = { id: string; name: string };
@@ -80,7 +79,7 @@ function LocationSelectField({
     );
 }
 
-export function LocationFiltersCard() {
+export function LocationFilters() {
     const countryId = useMapStore((state) => state.countryId);
     const municipalityId = useMapStore((state) => state.municipalityId);
     const cityId = useMapStore((state) => state.cityId);
@@ -97,13 +96,11 @@ export function LocationFiltersCard() {
     const cities = citiesQuery.data ?? [];
 
     return (
-        <Card className="pointer-events-auto w-72 gap-3 py-4">
-            <CardHeader className="px-4">
-                <CardTitle className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
-                    Location filters
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-y-2 px-4">
+        <div className="flex flex-col gap-3 px-4">
+            <h2 className="text-xs font-semibold tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+                Location filters
+            </h2>
+            <div className="flex flex-col gap-y-2">
                 <LocationSelectField
                     label="Country"
                     placeholder={getRootPlaceholder(countriesQuery, "countries")}
@@ -144,7 +141,7 @@ export function LocationFiltersCard() {
                     options={cities}
                     className="col-span-2"
                 />
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

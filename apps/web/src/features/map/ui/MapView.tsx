@@ -13,9 +13,9 @@ import {
     type MapStyleId,
 } from "@/features/map/lib/config";
 import { useMapStore } from "@/features/map/model/map-store";
-import { LocationFiltersCard } from "@/features/map/ui/LocationFiltersCard";
 import { MapStyleControl } from "@/features/map/ui/MapStyleControl";
 import { MapZoomControl } from "@/features/map/ui/MapZoomControl";
+import { ParkingZonesControlPanel } from "@/features/map/ui/ParkingZonesControlPanel";
 import { useParkingZonesLayer } from "@/features/parking-zones/ui/useParkingZonesLayer";
 
 export function MapView() {
@@ -98,7 +98,7 @@ export function MapView() {
             {map && (
                 <>
                     <div className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2 sm:left-6">
-                        <LocationFiltersCard />
+                        <ParkingZonesControlPanel />
                     </div>
                     <div className="pointer-events-none absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col items-end gap-3 sm:right-6">
                         <MapStyleControl map={map} styleId={styleId} onStyleChange={handleStyleChange} />
