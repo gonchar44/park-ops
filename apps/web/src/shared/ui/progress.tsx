@@ -63,7 +63,7 @@ export function Progress({
                     value={value}
                     max={max}
                     aria-orientation="vertical"
-                    className="relative h-24 w-1.5 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10"
+                    className="relative h-24 w-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10"
                     {...props}
                 >
                     <ProgressPrimitive.Indicator
@@ -85,7 +85,7 @@ export function Progress({
             <ProgressPrimitive.Root
                 value={value}
                 max={max}
-                className="relative h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10"
+                className="relative h-1 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10"
                 {...props}
             >
                 <ProgressPrimitive.Indicator

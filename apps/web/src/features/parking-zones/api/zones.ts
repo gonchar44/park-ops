@@ -31,8 +31,14 @@ export type ParkingZonePolygon = z.infer<typeof parkingZonePolygonSchema>;
 
 const parkingZoneSchema = z.object({
     id: z.string(),
+    name: z.string(),
+    code: z.string(),
     status: parkingZoneStatusSchema,
     polygon: parkingZonePolygonSchema,
+    capacity: z.number().nullable(),
+    occupiedSpaces: z.number().nullable(),
+    warningOccupancyPercent: z.number(),
+    criticalOccupancyPercent: z.number(),
 });
 
 export type ParkingZone = z.infer<typeof parkingZoneSchema>;
