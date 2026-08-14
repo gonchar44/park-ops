@@ -98,7 +98,7 @@ export const parkingZones = pgTable(
         check("parking_zones_price_per_hour_non_negative", sql`${table.pricePerHour} >= 0`),
         check("parking_zones_currency_iso_code", sql`${table.currency} ~ '^[A-Z]{3}$'`),
         check("parking_zones_vehicle_restrictions_object", sql`jsonb_typeof(${table.vehicleRestrictions}) = 'object'`),
-        check("parking_zones_opening_hours_object", sql`jsonb_typeof(${table.openingHours}) = 'object'`),
+        check("parking_zones_opening_hours_object", sql`is_valid_parking_zone_opening_hours(${table.openingHours})`),
         check("parking_zones_free_parking_minutes_range", sql`${table.freeParkingMinutes} BETWEEN 0 AND 1440`),
         check("parking_zones_warning_occupancy_range", sql`${table.warningOccupancyPercent} BETWEEN 0 AND 100`),
         check("parking_zones_critical_occupancy_range", sql`${table.criticalOccupancyPercent} BETWEEN 0 AND 100`),
