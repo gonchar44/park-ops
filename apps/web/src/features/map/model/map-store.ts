@@ -19,7 +19,7 @@ type MapState = {
 };
 
 function isLocationFilterId(value: unknown): value is LocationFilterId {
-    return typeof value === "string" || value === null;
+    return (typeof value === "string" && value.length > 0) || value === null;
 }
 
 export const useMapStore = create<MapState>()(
