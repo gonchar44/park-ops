@@ -31,6 +31,10 @@ export const cities = pgTable(
         check("cities_name_not_blank", sql`length(btrim(${table.name})) > 0`),
         check("cities_center_not_empty", sql`NOT ST_IsEmpty(${table.center})`),
         check("cities_center_valid", sql`ST_IsValid(${table.center})`),
+        check(
+            "cities_center_within_bounds",
+            sql`ST_X(${table.center}) BETWEEN -180 AND 180 AND ST_Y(${table.center}) BETWEEN -90 AND 90`,
+        ),
     ],
 );
 
