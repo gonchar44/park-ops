@@ -1,7 +1,11 @@
-export type GeoJsonPoint = {
-    type: "Point";
-    coordinates: [number, number];
-};
+import { z } from "zod";
+
+const geoJsonPointSchema = z.object({
+    type: z.literal("Point"),
+    coordinates: z.tuple([z.number().finite(), z.number().finite()]),
+});
+
+export type GeoJsonPoint = z.infer<typeof geoJsonPointSchema>;
 
 export type CityResponseDto = {
     id: string;
@@ -25,6 +29,6 @@ export function toCityResponseDto(row: CityRow): CityResponseDto {
         code: row.code,
         name: row.name,
         municipalityId: row.municipalityId,
-        center: JSON.parse(row.center) as GeoJsonPoint,
+        center: geoJsonPointSchema.parse(JSON.parse(row.center)),
     };
 }
