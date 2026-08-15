@@ -7,6 +7,11 @@ AS $$
         CASE
             WHEN jsonb_typeof(opening_hours) != 'object' THEN false
             WHEN NOT (opening_hours ?& ARRAY['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']) THEN false
+            WHEN EXISTS (
+                SELECT 1
+                FROM jsonb_object_keys(opening_hours) AS key
+                WHERE key NOT IN ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')
+            ) THEN false
             ELSE (
                 SELECT bool_and(
                     CASE WHEN jsonb_typeof(day_value) = 'array' THEN
