@@ -36,4 +36,4 @@ AS $$
         END;
 $$;--> statement-breakpoint
 ALTER TABLE "parking_zones" DROP CONSTRAINT "parking_zones_opening_hours_object";--> statement-breakpoint
-ALTER TABLE "parking_zones" ADD CONSTRAINT "parking_zones_opening_hours_object" CHECK (is_valid_parking_zone_opening_hours("parking_zones"."opening_hours"));
+ALTER TABLE "parking_zones" ADD CONSTRAINT "parking_zones_opening_hours_object" CHECK (is_valid_parking_zone_opening_hours("parking_zones"."opening_hours")) NOT VALID;
