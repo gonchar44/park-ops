@@ -104,13 +104,24 @@ describe("CitiesController (e2e)", () => {
     });
 
     function testEntries(body: unknown) {
-        return (body as unknown[]).filter(
-            (entry): entry is { id: string; code: string; name: string; municipalityId: string; center: unknown } =>
-                typeof entry === "object" &&
-                entry !== null &&
-                "name" in entry &&
-                typeof entry.name === "string" &&
-                (entry as { name: string }).name.startsWith(TEST_NAME_PREFIX),
+        if (!Array.isArray(body)) {
+            throw new Error("Expected response body to be an array");
+        }
+
+        return body.filter(
+            (entry): entry is { id: string; code: string; name: string; municipalityId: string; center: unknown } => {
+                if (typeof entry !== "object" || entry === null) {
+                    return false;
+                }
+                const candidate = entry as Record<string, unknown>;
+                return (
+                    typeof candidate.id === "string" &&
+                    typeof candidate.code === "string" &&
+                    typeof candidate.name === "string" &&
+                    typeof candidate.municipalityId === "string" &&
+                    candidate.name.startsWith(TEST_NAME_PREFIX)
+                );
+            },
         );
     }
 
