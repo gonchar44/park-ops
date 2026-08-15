@@ -1,0 +1,131 @@
+name: PR Checks
+
+on:
+    pull_request:
+        branches: [main, dev]
+
+permissions:
+    contents: read
+
+concurrency:
+    group: pr-checks-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+env:
+    CI: true
+
+jobs:
+    formatting:
+        name: Formatting
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Check formatting
+              run: pnpm format:check
+
+            - name: Check workflow formatting
+              run: pnpm exec prettier --check .github/workflows/pr-checks.yml
+
+    web:
+        name: Web
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        env:
+            NEXT_TELEMETRY_DISABLED: 1
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Type check
+              run: pnpm --filter web typecheck
+
+            - name: Lint
+              run: pnpm --filter web lint
+
+            - name: Build
+              run: pnpm --filter web build
+
+    api:
+        name: API
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        env:
+            DATABASE_URL: postgres://parkops:parkops@localhost:5432/parkops_test
+
+        services:
+            postgres:
+                image: postgis/postgis:16-3.4
+                env:
+                    POSTGRES_USER: parkops
+                    POSTGRES_PASSWORD: parkops
+                    POSTGRES_DB: parkops_test
+                ports:
+                    - 5432:5432
+                options: >-
+                    --health-cmd "pg_isready -U parkops -d parkops_test"
+                    --health-interval 5s
+                    --health-timeout 5s
+                    --health-retries 10
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v6
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v6
+              with:
+                  node-version-file: .nvmrc
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Apply database migrations
+              run: pnpm --filter api db:migrate
+
+            - name: Type check
+              run: pnpm --filter api typecheck
+
+            - name: Lint
+              run: pnpm --filter api exec eslint "{src,apps,libs,test}/**/*.ts"
+
+            - name: Run unit tests
+              run: pnpm --filter api test
+
+            - name: Run end-to-end tests
+              run: pnpm --filter api test:e2e
+
+            - name: Build
+              run: pnpm --filter api build

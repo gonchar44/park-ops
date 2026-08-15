@@ -1,0 +1,57 @@
+language: "en-US"
+
+reviews:
+    profile: "chill"
+    request_changes_workflow: false
+    high_level_summary: true
+    review_status: true
+    review_details: false
+    collapse_walkthrough: true
+    changed_files_summary: true
+    auto_review:
+        enabled: true
+        drafts: false
+        auto_incremental_review: true
+        base_branches:
+            - "main"
+            - "dev"
+    path_filters:
+        - "!**/node_modules/**"
+        - "!**/dist/**"
+        - "!**/.next/**"
+        - "!**/coverage/**"
+    path_instructions:
+        - path: "apps/api/**"
+          instructions: |
+              Review this as the NestJS API and authoritative business boundary. Prioritize runtime validation, stable DTOs, safe error responses, authorization boundaries, parameterized Drizzle/PostgreSQL queries, and keeping persistence details out of HTTP contracts. Zod is the approved validation library when runtime validation is needed.
+        - path: "apps/api/src/database/**"
+          instructions: |
+              Treat database and PostGIS changes as data-integrity critical. Verify explicit SRID 4326 geometry handling, PostGIS extension assumptions, migration consistency, transactions when geometry and metadata change together, and parameterized SQL for spatial operations. Do not suggest editing generated migration metadata by hand.
+        - path: "apps/web/**"
+          instructions: |
+              Review this as the Next.js App Router frontend. Prefer Server Components by default, keep route files thin, add client components only at the smallest browser-interactive boundary, and preserve the feature-first structure under src/features. Watch for secrets leaking through NEXT_PUBLIC variables.
+        - path: "apps/web/src/features/map/**"
+          instructions: |
+              Treat map and geometry editing as high-risk operator workflow code. GeoJSON coordinates must stay [longitude, latitude], drafts must not mutate cached canonical data, unsaved edits need safe recovery, stale viewport requests should be cancelled or ignored, and the API/PostGIS response remains authoritative.
+        - path: "**/*.{ts,tsx}"
+          instructions: |
+              Preserve strict TypeScript. Avoid any, unsafe assertions, broad non-null assertions, vague names, and new global utility folders. Keep feature code co-located and communicate between apps only through explicit HTTP contracts.
+        - path: ".env*"
+          instructions: |
+              Check that no secrets, tokens, private service URLs, credentials, cookies, or full connection strings are committed. Browser-exposed variables must use NEXT_PUBLIC_ only when the value is intentionally public.
+        - path: "**/.env*"
+          instructions: |
+              Check that no secrets, tokens, private service URLs, credentials, cookies, or full connection strings are committed. Browser-exposed variables must use NEXT_PUBLIC_ only when the value is intentionally public.
+        - path: "pnpm-lock.yaml"
+          instructions: |
+              Review lockfile changes only together with the related package.json change. Flag unrelated dependency churn, overlapping libraries, or installs of approved future libraries before a concrete feature needs them.
+
+chat:
+    auto_reply: true
+
+knowledge_base:
+    code_guidelines:
+        enabled: true
+        filePatterns:
+            - "AGENTS.md"
+            - "apps/**/AGENTS.md"
