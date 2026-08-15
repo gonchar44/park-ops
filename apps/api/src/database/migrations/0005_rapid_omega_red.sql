@@ -1,0 +1,1 @@
+ALTER TABLE "cities" ADD CONSTRAINT "cities_center_within_bounds" CHECK (ST_X("cities"."center") BETWEEN -180 AND 180 AND ST_Y("cities"."center") BETWEEN -90 AND 90);

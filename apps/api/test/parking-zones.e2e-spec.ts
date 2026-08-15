@@ -87,12 +87,14 @@ describe("ParkingZonesController (e2e)", () => {
                     municipalityId: municipality.id,
                     code: "ZONE-CTA",
                     name: `${TEST_NAME_PREFIX} City A`,
+                    center: sql<string>`ST_SetSRID(ST_MakePoint(12.5683, 55.6761), 4326)`,
                     isActive: true,
                 },
                 {
                     municipalityId: municipality.id,
                     code: "ZONE-CTB",
                     name: `${TEST_NAME_PREFIX} City B`,
+                    center: sql<string>`ST_SetSRID(ST_MakePoint(12.5683, 55.6761), 4326)`,
                     isActive: true,
                 },
             ])
@@ -156,9 +158,23 @@ describe("ParkingZonesController (e2e)", () => {
     });
 
     function testEntries(body: unknown) {
-        return (body as { name: string; cityId: string; polygon: unknown }[]).filter((entry) =>
-            entry.name.startsWith(TEST_NAME_PREFIX),
-        );
+        if (!Array.isArray(body)) {
+            throw new Error("Expected response body to be an array");
+        }
+
+        return body.filter((entry): entry is { name: string; cityId: string; polygon: unknown } => {
+            if (typeof entry !== "object" || entry === null) {
+                return false;
+            }
+            const candidate = entry as Record<string, unknown>;
+            return (
+                typeof candidate.name === "string" &&
+                typeof candidate.cityId === "string" &&
+                typeof candidate.polygon === "object" &&
+                candidate.polygon !== null &&
+                candidate.name.startsWith(TEST_NAME_PREFIX)
+            );
+        });
     }
 
     it("returns only the requested city's zones, sorted by name, with a parsed GeoJSON polygon", async () => {

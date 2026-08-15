@@ -57,7 +57,7 @@ export function AppHeader() {
                             className={cn(
                                 "relative rounded-full px-4 py-2 text-sm font-medium transition-colors",
                                 isActive
-                                    ? "text-zinc-900 dark:text-zinc-50"
+                                    ? "text-white dark:text-zinc-50"
                                     : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100",
                             )}
                         >
@@ -65,7 +65,7 @@ export function AppHeader() {
                                 <motion.span
                                     layoutId={ACTIVE_PILL_LAYOUT_ID}
                                     transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-                                    className="absolute inset-0 rounded-full bg-white shadow-sm dark:bg-white/15"
+                                    className="absolute inset-0 rounded-full bg-zinc-900 shadow-sm dark:bg-white/15"
                                 />
                             )}
                             <span className="relative">{item.label}</span>

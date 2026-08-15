@@ -1,6 +1,6 @@
 import { INestApplication } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
-import { inArray } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import request from "supertest";
 import { App } from "supertest/types";
@@ -11,6 +11,8 @@ import { municipalities } from "../src/database/schema/municipalities";
 import { DRIZZLE } from "../src/database/database.module";
 
 const TEST_NAME_PREFIX = "E2E Test City";
+const TEST_CITY_CENTER = sql<string>`ST_SetSRID(ST_MakePoint(12.5683, 55.6761), 4326)`;
+const TEST_CITY_CENTER_GEOJSON = { type: "Point", coordinates: [12.5683, 55.6761] };
 
 describe("CitiesController (e2e)", () => {
     let app: INestApplication<App>;
@@ -58,10 +60,34 @@ describe("CitiesController (e2e)", () => {
         const insertedCities = await db
             .insert(cities)
             .values([
-                { municipalityId: municipalityAId, code: "CTB", name: `${TEST_NAME_PREFIX} Beta`, isActive: true },
-                { municipalityId: municipalityAId, code: "CTA", name: `${TEST_NAME_PREFIX} Alpha`, isActive: true },
-                { municipalityId: municipalityAId, code: "CTC", name: `${TEST_NAME_PREFIX} Closed`, isActive: false },
-                { municipalityId: municipalityBId, code: "CTD", name: `${TEST_NAME_PREFIX} Delta`, isActive: true },
+                {
+                    municipalityId: municipalityAId,
+                    code: "CTB",
+                    name: `${TEST_NAME_PREFIX} Beta`,
+                    center: TEST_CITY_CENTER,
+                    isActive: true,
+                },
+                {
+                    municipalityId: municipalityAId,
+                    code: "CTA",
+                    name: `${TEST_NAME_PREFIX} Alpha`,
+                    center: TEST_CITY_CENTER,
+                    isActive: true,
+                },
+                {
+                    municipalityId: municipalityAId,
+                    code: "CTC",
+                    name: `${TEST_NAME_PREFIX} Closed`,
+                    center: TEST_CITY_CENTER,
+                    isActive: false,
+                },
+                {
+                    municipalityId: municipalityBId,
+                    code: "CTD",
+                    name: `${TEST_NAME_PREFIX} Delta`,
+                    center: TEST_CITY_CENTER,
+                    isActive: true,
+                },
             ])
             .returning({ id: cities.id });
         insertedCityIds = insertedCities.map((row) => row.id);
@@ -78,13 +104,24 @@ describe("CitiesController (e2e)", () => {
     });
 
     function testEntries(body: unknown) {
-        return (body as unknown[]).filter(
-            (entry): entry is { id: string; code: string; name: string; municipalityId: string } =>
-                typeof entry === "object" &&
-                entry !== null &&
-                "name" in entry &&
-                typeof entry.name === "string" &&
-                (entry as { name: string }).name.startsWith(TEST_NAME_PREFIX),
+        if (!Array.isArray(body)) {
+            throw new Error("Expected response body to be an array");
+        }
+
+        return body.filter(
+            (entry): entry is { id: string; code: string; name: string; municipalityId: string; center: unknown } => {
+                if (typeof entry !== "object" || entry === null) {
+                    return false;
+                }
+                const candidate = entry as Record<string, unknown>;
+                return (
+                    typeof candidate.id === "string" &&
+                    typeof candidate.code === "string" &&
+                    typeof candidate.name === "string" &&
+                    typeof candidate.municipalityId === "string" &&
+                    candidate.name.startsWith(TEST_NAME_PREFIX)
+                );
+            },
         );
     }
 
@@ -94,12 +131,30 @@ describe("CitiesController (e2e)", () => {
         const entries = testEntries(response.body);
 
         expect(entries).toEqual([
-            { id: insertedCityIds[1], code: "CTA", name: `${TEST_NAME_PREFIX} Alpha`, municipalityId: municipalityAId },
-            { id: insertedCityIds[0], code: "CTB", name: `${TEST_NAME_PREFIX} Beta`, municipalityId: municipalityAId },
-            { id: insertedCityIds[3], code: "CTD", name: `${TEST_NAME_PREFIX} Delta`, municipalityId: municipalityBId },
+            {
+                id: insertedCityIds[1],
+                code: "CTA",
+                name: `${TEST_NAME_PREFIX} Alpha`,
+                municipalityId: municipalityAId,
+                center: TEST_CITY_CENTER_GEOJSON,
+            },
+            {
+                id: insertedCityIds[0],
+                code: "CTB",
+                name: `${TEST_NAME_PREFIX} Beta`,
+                municipalityId: municipalityAId,
+                center: TEST_CITY_CENTER_GEOJSON,
+            },
+            {
+                id: insertedCityIds[3],
+                code: "CTD",
+                name: `${TEST_NAME_PREFIX} Delta`,
+                municipalityId: municipalityBId,
+                center: TEST_CITY_CENTER_GEOJSON,
+            },
         ]);
         for (const entry of entries) {
-            expect(Object.keys(entry).sort()).toEqual(["code", "id", "municipalityId", "name"]);
+            expect(Object.keys(entry).sort()).toEqual(["center", "code", "id", "municipalityId", "name"]);
         }
     });
 
@@ -110,7 +165,13 @@ describe("CitiesController (e2e)", () => {
             .expect(200);
 
         expect(testEntries(response.body)).toEqual([
-            { id: insertedCityIds[3], code: "CTD", name: `${TEST_NAME_PREFIX} Delta`, municipalityId: municipalityBId },
+            {
+                id: insertedCityIds[3],
+                code: "CTD",
+                name: `${TEST_NAME_PREFIX} Delta`,
+                municipalityId: municipalityBId,
+                center: TEST_CITY_CENTER_GEOJSON,
+            },
         ]);
     });
 
@@ -118,8 +179,20 @@ describe("CitiesController (e2e)", () => {
         const response = await request(app.getHttpServer()).get("/cities").query({ countryId: countryAId }).expect(200);
 
         expect(testEntries(response.body)).toEqual([
-            { id: insertedCityIds[1], code: "CTA", name: `${TEST_NAME_PREFIX} Alpha`, municipalityId: municipalityAId },
-            { id: insertedCityIds[0], code: "CTB", name: `${TEST_NAME_PREFIX} Beta`, municipalityId: municipalityAId },
+            {
+                id: insertedCityIds[1],
+                code: "CTA",
+                name: `${TEST_NAME_PREFIX} Alpha`,
+                municipalityId: municipalityAId,
+                center: TEST_CITY_CENTER_GEOJSON,
+            },
+            {
+                id: insertedCityIds[0],
+                code: "CTB",
+                name: `${TEST_NAME_PREFIX} Beta`,
+                municipalityId: municipalityAId,
+                center: TEST_CITY_CENTER_GEOJSON,
+            },
         ]);
     });
 

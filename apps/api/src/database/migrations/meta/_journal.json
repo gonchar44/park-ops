@@ -22,6 +22,27 @@
       "when": 1785793826376,
       "tag": "0002_motionless_goliath",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786546319060,
+      "tag": "0003_cheerful_the_hand",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786718727988,
+      "tag": "0004_right_maverick",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786799411123,
+      "tag": "0005_rapid_omega_red",
+      "breakpoints": true
     }
   ]
 }

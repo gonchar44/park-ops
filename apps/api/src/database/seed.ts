@@ -1,7 +1,7 @@
 import "dotenv/config";
 
-import { sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/postgres-js";
+import { type ExtractTablesWithRelations, sql } from "drizzle-orm";
+import { drizzle, type PostgresJsTransaction } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import { cities } from "./schema/cities";
@@ -17,6 +17,102 @@ type GeoJsonPolygon = {
 type ParkingZoneSeed = Omit<NewParkingZone, "id" | "cityId" | "polygon" | "createdAt" | "updatedAt"> & {
     polygon: GeoJsonPolygon;
 };
+
+type GeoJsonPoint = {
+    type: "Point";
+    coordinates: [number, number];
+};
+
+type CitySeed = {
+    code: string;
+    name: string;
+    center: GeoJsonPoint;
+};
+
+type MunicipalitySeed = {
+    code: string;
+    name: string;
+    cities: CitySeed[];
+};
+
+type CountrySeed = {
+    isoCode: string;
+    name: string;
+    municipalities: MunicipalitySeed[];
+};
+
+const COPENHAGEN_CITY_KEY = "DK/COPENHAGEN/COPENHAGEN";
+
+function point(longitude: number, latitude: number): GeoJsonPoint {
+    return { type: "Point", coordinates: [longitude, latitude] };
+}
+
+const locationSeeds: CountrySeed[] = [
+    {
+        isoCode: "DK",
+        name: "Denmark",
+        municipalities: [
+            {
+                code: "COPENHAGEN",
+                name: "Copenhagen Municipality",
+                cities: [{ code: "COPENHAGEN", name: "Copenhagen", center: point(12.5683, 55.6761) }],
+            },
+            {
+                code: "AARHUS",
+                name: "Aarhus Municipality",
+                cities: [{ code: "AARHUS", name: "Aarhus", center: point(10.2039, 56.1629) }],
+            },
+            {
+                code: "ODENSE",
+                name: "Odense Municipality",
+                cities: [{ code: "ODENSE", name: "Odense", center: point(10.3873, 55.4038) }],
+            },
+        ],
+    },
+    {
+        isoCode: "SE",
+        name: "Sweden",
+        municipalities: [
+            {
+                code: "STOCKHOLM",
+                name: "Stockholm Municipality",
+                cities: [{ code: "STOCKHOLM", name: "Stockholm", center: point(18.0686, 59.3293) }],
+            },
+            {
+                code: "GOTHENBURG",
+                name: "Gothenburg Municipality",
+                cities: [{ code: "GOTHENBURG", name: "Gothenburg", center: point(11.9746, 57.7089) }],
+            },
+        ],
+    },
+    {
+        isoCode: "DE",
+        name: "Germany",
+        municipalities: [
+            {
+                code: "BERLIN",
+                name: "Berlin Municipality",
+                cities: [{ code: "BERLIN", name: "Berlin", center: point(13.405, 52.52) }],
+            },
+            {
+                code: "HAMBURG",
+                name: "Hamburg Municipality",
+                cities: [{ code: "HAMBURG", name: "Hamburg", center: point(9.9937, 53.5511) }],
+            },
+        ],
+    },
+    {
+        isoCode: "NL",
+        name: "Netherlands",
+        municipalities: [
+            {
+                code: "AMSTERDAM",
+                name: "Amsterdam Municipality",
+                cities: [{ code: "AMSTERDAM", name: "Amsterdam", center: point(4.9041, 52.3676) }],
+            },
+        ],
+    },
+];
 
 const weekdayAndSaturdayHours: OpeningHours = {
     monday: [{ opensAt: "07:00", closesAt: "22:00" }],
@@ -178,6 +274,50 @@ const parkingZoneSeeds: ParkingZoneSeed[] = [
     },
 ];
 
+async function seedLocations(
+    transaction: PostgresJsTransaction<Record<string, never>, ExtractTablesWithRelations<Record<string, never>>>,
+): Promise<Map<string, string>> {
+    const cityIdByLocationKey = new Map<string, string>();
+
+    for (const country of locationSeeds) {
+        const [countryRow] = await transaction
+            .insert(countries)
+            .values({ isoCode: country.isoCode, name: country.name })
+            .onConflictDoUpdate({
+                target: countries.isoCode,
+                set: { name: country.name, isActive: true, updatedAt: new Date() },
+            })
+            .returning({ id: countries.id });
+
+        for (const municipality of country.municipalities) {
+            const [municipalityRow] = await transaction
+                .insert(municipalities)
+                .values({ countryId: countryRow.id, code: municipality.code, name: municipality.name })
+                .onConflictDoUpdate({
+                    target: [municipalities.countryId, municipalities.code],
+                    set: { name: municipality.name, isActive: true, updatedAt: new Date() },
+                })
+                .returning({ id: municipalities.id });
+
+            for (const city of municipality.cities) {
+                const centerSql = sql<string>`ST_SetSRID(ST_GeomFromGeoJSON(${JSON.stringify(city.center)}), 4326)`;
+                const [cityRow] = await transaction
+                    .insert(cities)
+                    .values({ municipalityId: municipalityRow.id, code: city.code, name: city.name, center: centerSql })
+                    .onConflictDoUpdate({
+                        target: [cities.municipalityId, cities.code],
+                        set: { name: city.name, center: centerSql, isActive: true, updatedAt: new Date() },
+                    })
+                    .returning({ id: cities.id });
+
+                cityIdByLocationKey.set(`${country.isoCode}/${municipality.code}/${city.code}`, cityRow.id);
+            }
+        }
+    }
+
+    return cityIdByLocationKey;
+}
+
 async function seedParkingZones() {
     const databaseUrl = process.env.DATABASE_URL;
 
@@ -190,52 +330,12 @@ async function seedParkingZones() {
 
     try {
         await database.transaction(async (transaction) => {
-            const [denmark] = await transaction
-                .insert(countries)
-                .values({ isoCode: "DK", name: "Denmark" })
-                .onConflictDoUpdate({
-                    target: countries.isoCode,
-                    set: {
-                        name: "Denmark",
-                        isActive: true,
-                        updatedAt: new Date(),
-                    },
-                })
-                .returning({ id: countries.id });
+            const cityIdByLocationKey = await seedLocations(transaction);
+            const copenhagenId = cityIdByLocationKey.get(COPENHAGEN_CITY_KEY);
 
-            const [copenhagenMunicipality] = await transaction
-                .insert(municipalities)
-                .values({
-                    countryId: denmark.id,
-                    code: "COPENHAGEN",
-                    name: "Copenhagen Municipality",
-                })
-                .onConflictDoUpdate({
-                    target: [municipalities.countryId, municipalities.code],
-                    set: {
-                        name: "Copenhagen Municipality",
-                        isActive: true,
-                        updatedAt: new Date(),
-                    },
-                })
-                .returning({ id: municipalities.id });
-
-            const [copenhagen] = await transaction
-                .insert(cities)
-                .values({
-                    municipalityId: copenhagenMunicipality.id,
-                    code: "COPENHAGEN",
-                    name: "Copenhagen",
-                })
-                .onConflictDoUpdate({
-                    target: [cities.municipalityId, cities.code],
-                    set: {
-                        name: "Copenhagen",
-                        isActive: true,
-                        updatedAt: new Date(),
-                    },
-                })
-                .returning({ id: cities.id });
+            if (!copenhagenId) {
+                throw new Error(`Expected seeded city for key "${COPENHAGEN_CITY_KEY}" but none was found.`);
+            }
 
             for (const seed of parkingZoneSeeds) {
                 const { code, polygon, ...mutableValues } = seed;
@@ -243,11 +343,11 @@ async function seedParkingZones() {
 
                 await transaction
                     .insert(parkingZones)
-                    .values({ cityId: copenhagen.id, code, polygon: polygonSql, ...mutableValues })
+                    .values({ cityId: copenhagenId, code, polygon: polygonSql, ...mutableValues })
                     .onConflictDoUpdate({
                         target: parkingZones.code,
                         set: {
-                            cityId: copenhagen.id,
+                            cityId: copenhagenId,
                             polygon: polygonSql,
                             ...mutableValues,
                             updatedAt: new Date(),
@@ -256,7 +356,7 @@ async function seedParkingZones() {
             }
         });
 
-        console.info(`Seeded ${parkingZoneSeeds.length} parking zones.`);
+        console.info(`Seeded ${locationSeeds.length} countries and ${parkingZoneSeeds.length} parking zones.`);
     } finally {
         await client.end();
     }

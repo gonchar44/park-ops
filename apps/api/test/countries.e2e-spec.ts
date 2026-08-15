@@ -53,9 +53,13 @@ describe("CountriesController (e2e)", () => {
             (entry): entry is { id: string; isoCode: string; name: string } =>
                 typeof entry === "object" &&
                 entry !== null &&
+                "id" in entry &&
+                typeof entry.id === "string" &&
+                "isoCode" in entry &&
+                typeof entry.isoCode === "string" &&
                 "name" in entry &&
                 typeof entry.name === "string" &&
-                (entry as { name: string }).name.startsWith(TEST_NAME_PREFIX),
+                entry.name.startsWith(TEST_NAME_PREFIX),
         );
 
         expect(testEntries).toEqual([

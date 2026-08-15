@@ -4,10 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { DEFAULT_MAP_VIEW, GEOAPIFY_API_KEY, getMapStyle, type MapStyleId } from "@/features/map/lib/config";
+import { useCities } from "@/features/map/api/geography-queries";
+import {
+    CITY_FOCUS_ZOOM,
+    DEFAULT_MAP_VIEW,
+    GEOAPIFY_API_KEY,
+    getMapStyle,
+    type MapStyleId,
+} from "@/features/map/lib/config";
 import { useMapStore } from "@/features/map/model/map-store";
 import { MapStyleControl } from "@/features/map/ui/MapStyleControl";
 import { MapZoomControl } from "@/features/map/ui/MapZoomControl";
+import { ParkingZonesControlPanel } from "@/features/map/ui/ParkingZonesControlPanel";
+import { useParkingZonesLayer } from "@/features/parking-zones/ui/useParkingZonesLayer";
 
 export function MapView() {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -15,6 +24,27 @@ export function MapView() {
     const [map, setMap] = useState<maplibregl.Map | null>(null);
     const styleId = useMapStore((state) => state.mapStyleId);
     const setMapStyleId = useMapStore((state) => state.setMapStyleId);
+    const countryId = useMapStore((state) => state.countryId);
+    const municipalityId = useMapStore((state) => state.municipalityId);
+    const cityId = useMapStore((state) => state.cityId);
+
+    useParkingZonesLayer(map, cityId);
+
+    const citiesQuery = useCities(countryId, municipalityId);
+
+    useEffect(() => {
+        if (!map || !cityId) {
+            return;
+        }
+
+        const selectedCity = citiesQuery.data?.find((city) => city.id === cityId);
+
+        if (!selectedCity) {
+            return;
+        }
+
+        map.flyTo({ center: selectedCity.center.coordinates, zoom: CITY_FOCUS_ZOOM });
+    }, [map, cityId, citiesQuery.data]);
 
     useEffect(() => {
         if (!containerRef.current || !GEOAPIFY_API_KEY) {
@@ -66,10 +96,15 @@ export function MapView() {
             <div ref={containerRef} role="region" aria-label="Map" className="h-full w-full" />
 
             {map && (
-                <div className="pointer-events-none absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col items-end gap-3 sm:right-6">
-                    <MapStyleControl map={map} styleId={styleId} onStyleChange={handleStyleChange} />
-                    <MapZoomControl map={map} />
-                </div>
+                <>
+                    <div className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2 sm:left-6">
+                        <ParkingZonesControlPanel />
+                    </div>
+                    <div className="pointer-events-none absolute top-1/2 right-4 z-10 flex -translate-y-1/2 flex-col items-end gap-3 sm:right-6">
+                        <MapStyleControl map={map} styleId={styleId} onStyleChange={handleStyleChange} />
+                        <MapZoomControl map={map} />
+                    </div>
+                </>
             )}
         </div>
     );

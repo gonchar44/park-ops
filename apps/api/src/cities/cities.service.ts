@@ -1,29 +1,13 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { DRIZZLE } from "../database/database.module";
 import { cities } from "../database/schema/cities";
 import { municipalities } from "../database/schema/municipalities";
-import type { CityResponseDto } from "./dto/city-response.dto";
+import { type CityResponseDto, toCityResponseDto } from "./dto/city-response.dto";
 import type { ListCitiesQueryDto } from "./dto/list-cities-query.dto";
 
 const MAX_CITIES_RESULTS = 500;
-
-type CityRow = {
-    id: string;
-    code: string;
-    name: string;
-    municipalityId: string;
-};
-
-function toCityResponseDto(city: CityRow): CityResponseDto {
-    return {
-        id: city.id,
-        code: city.code,
-        name: city.name,
-        municipalityId: city.municipalityId,
-    };
-}
 
 @Injectable()
 export class CitiesService {
@@ -46,6 +30,7 @@ export class CitiesService {
                 code: cities.code,
                 name: cities.name,
                 municipalityId: cities.municipalityId,
+                center: sql<string>`ST_AsGeoJSON(${cities.center})`,
             })
             .from(cities)
             .innerJoin(municipalities, eq(municipalities.id, cities.municipalityId))

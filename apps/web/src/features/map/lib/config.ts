@@ -8,6 +8,8 @@ export const DEFAULT_MAP_VIEW = {
     zoom: 12,
 };
 
+export const CITY_FOCUS_ZOOM = 12;
+
 export type MapStyleId = "standard" | "streets" | "satellite";
 
 export const DEFAULT_MAP_STYLE_ID: MapStyleId = "standard";
