@@ -11,9 +11,15 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch(path: string, init?: RequestInit): Promise<unknown> {
+    const headers = new Headers(init?.headers);
+
+    if (!headers.has("Accept")) {
+        headers.set("Accept", "application/json");
+    }
+
     const response = await fetch(`${API_BASE_URL}${path}`, {
         ...init,
-        headers: { Accept: "application/json", ...init?.headers },
+        headers,
     });
 
     if (!response.ok) {
